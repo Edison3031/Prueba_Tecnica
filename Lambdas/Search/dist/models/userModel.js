@@ -1,43 +1,30 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserModel = void 0;
+const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
+const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
 class UserModel {
     constructor() {
-        this.tableName = 'Users';
-        const client = new DynamoDBClient({});
-        this.docClient = DynamoDBDocumentClient.from(client);
+        this.tableName = 'Solicitudes';
+        const client = new client_dynamodb_1.DynamoDBClient({});
+        this.docClient = lib_dynamodb_1.DynamoDBDocumentClient.from(client);
     }
-
-    async getUser(userId) {
+    async getAllSolicitudes() {
         const params = {
             TableName: this.tableName,
-            Key: {
-                userId: userId
-            }
+            ProjectionExpression: "ID, Titulo, Descripcion, Monto, Estado"
         };
-
         try {
-            const { Item } = await this.docClient.send(new GetCommand(params));
-            return Item;
-        } catch (error) {
-            console.error('Error al buscar usuario:', error);
-            throw error;
+            const result = await this.docClient.send(new lib_dynamodb_1.ScanCommand(params));
+            return {
+                items: result.Items,
+                message: 'Solicitudes obtenidas exitosamente'
+            };
         }
-    }
-
-    async getAllUsers() {
-        const params = {
-            TableName: this.tableName
-        };
-
-        try {
-            const { Items } = await this.docClient.send(new ScanCommand(params));
-            return Items;
-        } catch (error) {
-            console.error('Error al obtener todos los usuarios:', error);
+        catch (error) {
+            console.error('Error al obtener solicitudes:', error);
             throw error;
         }
     }
 }
-
-module.exports = UserModel;
+exports.UserModel = UserModel;

@@ -1,48 +1,33 @@
-const UserModel = require('../models/userModel');
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserController = void 0;
+const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
+const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
+const userModel_1 = require("../models/userModel");
 class UserController {
     constructor() {
-        this.userModel = new UserModel();
+        this.userModel = new userModel_1.UserModel();
+        const client = new client_dynamodb_1.DynamoDBClient({});
+        this.ddbDocClient = lib_dynamodb_1.DynamoDBDocumentClient.from(client);
     }
-
-    async getUser(event) {
+    async getSolicitudes(event) {
         try {
-            const userId = event.pathParameters?.userId;
-
-            if (!userId) {
-                // Si no hay userId, retornar todos los usuarios
-                const users = await this.userModel.getAllUsers();
-                return {
-                    statusCode: 200,
-                    body: JSON.stringify(users)
-                };
-            }
-
-            const user = await this.userModel.getUser(userId);
-
-            if (!user) {
-                return {
-                    statusCode: 404,
-                    body: JSON.stringify({
-                        message: 'Usuario no encontrado'
-                    })
-                };
-            }
-
+            const result = await this.userModel.getAllSolicitudes();
             return {
                 statusCode: 200,
-                body: JSON.stringify(user)
+                body: JSON.stringify({
+                    items: result.items,
+                    message: result.message
+                }),
             };
-        } catch (error) {
-            console.error('Error en el controlador:', error);
+        }
+        catch (error) {
+            console.error(error);
             return {
                 statusCode: 500,
-                body: JSON.stringify({
-                    message: 'Error interno del servidor'
-                })
+                body: JSON.stringify({ message: error instanceof Error ? error.message : 'Error interno del servidor' }),
             };
         }
     }
 }
-
-module.exports = UserController;
+exports.UserController = UserController;

@@ -1,6 +1,7 @@
-const UserController = require('./controllers/userController');
+import { UserController } from './controllers/userController';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 
-exports.handler = async (event) => {
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const userController = new UserController();
     
     // Configurar CORS
@@ -10,7 +11,7 @@ exports.handler = async (event) => {
     };
 
     try {
-        const response = await userController.getUser(event);
+        const response = await userController.getSolicitudes(event);
         return {
             ...response,
             headers

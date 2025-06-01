@@ -1,15 +1,12 @@
 {
-  "name": "search-user-lambda",
+  "name": "add-user-lambda",
   "version": "1.0.0",
-  "description": "Lambda function to search users in DynamoDB",
+  "description": "Lambda function to add users in DynamoDB",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "clean": "rimraf dist",
-    "make-dist": "mkdir dist",
-    "copy-files": "copyfiles index.js controllers/**/*.js models/**/*.js dist && cd dist && npm install --omit=dev",
-    "zip": "powershell Compress-Archive -Path ./dist/* -DestinationPath ./function.zip -Force",
-    "build": "npm run clean && npm run make-dist && npm run copy-files && npm run zip"
+    "build": "rimraf dist && tsc",
+    "postbuild": "powershell Copy-Item package*.json dist/ && cd dist && npm ci --production && powershell Compress-Archive -Path ./* -DestinationPath ../function.zip -Force"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.405.0",
@@ -17,8 +14,10 @@
   },
   "devDependencies": {
     "rimraf": "^5.0.1",
-    "copyfiles": "^2.4.1"
-  },
+    "typescript": "^5.0.0",
+    "@types/node": "^18.0.0",
+    "@types/aws-lambda": "^8.10.119"
+    },
   "author": "",
   "license": "ISC"
 }
