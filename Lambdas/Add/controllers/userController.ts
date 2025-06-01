@@ -12,15 +12,22 @@ export class UserController {
         this.ddbDocClient = DynamoDBDocumentClient.from(client);
     }
 
-    async addUser(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    async addUser(event: any): Promise<APIGatewayProxyResult> {
         try {
             if (!event.body) {
                 throw new Error('No se proporcionó el cuerpo de la solicitud');
             }
-            const book = JSON.parse(event.body);
+            const book = event.body;
             
             const newBook = {
-                ...book,
+                ID: book.ID,
+                Titulo: book.Titulo,
+                Descripcion: book.Descripcion,
+                Monto: book.Monto,
+                Estado: book.Estado,
+                Aprovacion1: book.Aprovacion1,
+                Aprovacion2: book.Aprovacion2,
+                Aprovacion3: book.Aprovacion3
             };
             await this.ddbDocClient.send(new PutCommand({
                 TableName: "Solicitudes",
