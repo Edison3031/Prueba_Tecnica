@@ -1,46 +1,40 @@
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserModel = void 0;
+const client_dynamodb_1 = require("@aws-sdk/client-dynamodb");
+const lib_dynamodb_1 = require("@aws-sdk/lib-dynamodb");
 class UserModel {
     constructor() {
-        this.tableName = 'Users';
-        const client = new DynamoDBClient({});
-        this.docClient = DynamoDBDocumentClient.from(client);
+        this.tableName = 'Solicitudes';
+        const client = new client_dynamodb_1.DynamoDBClient({});
+        this.docClient = lib_dynamodb_1.DynamoDBDocumentClient.from(client);
     }
-
-    async updateUser(userId, userData) {
-        // Crear la expresión de actualización dinámicamente
+    async updateSolicitud(ID, updateData) {
         const updateExpression = [];
         const expressionAttributeValues = {};
         const expressionAttributeNames = {};
-
-        Object.keys(userData).forEach((key) => {
-            if (key !== 'userId') { // No actualizamos la clave primaria
-                updateExpression.push(`#${key} = :${key}`);
-                expressionAttributeValues[`:${key}`] = userData[key];
-                expressionAttributeNames[`#${key}`] = key;
+        Object.entries(updateData).forEach(([key, value]) => {
+            if (value !== undefined && ['Aprovacion1', 'Aprovacion2', 'Aprovacion3'].includes(key)) {
+                const expressionKey = `#${key}`;
+                const expressionValue = `:${key}`;
+                updateExpression.push(`${expressionKey} = ${expressionValue}`);
+                expressionAttributeValues[expressionValue] = value;
+                expressionAttributeNames[expressionKey] = key;
             }
         });
-
+        if (updateExpression.length === 0) {
+            throw new Error('No se proporcionaron campos válidos para actualizar');
+        }
         const params = {
             TableName: this.tableName,
-            Key: {
-                userId: userId
-            },
+            Key: { ID },
             UpdateExpression: `SET ${updateExpression.join(', ')}`,
             ExpressionAttributeValues: expressionAttributeValues,
             ExpressionAttributeNames: expressionAttributeNames,
-            ReturnValues: 'ALL_NEW'
+            ReturnValues: "ALL_NEW"
         };
-
-        try {
-            const { Attributes } = await this.docClient.send(new UpdateCommand(params));
-            return Attributes;
-        } catch (error) {
-            console.error('Error al actualizar usuario:', error);
-            throw error;
-        }
+        const result = await this.docClient.send(new lib_dynamodb_1.UpdateCommand(params));
+        return result.Attributes;
     }
 }
-
-module.exports = UserModel;
+exports.UserModel = UserModel;
